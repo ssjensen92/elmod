@@ -94,6 +94,9 @@ class elmodel:
         if self._verbose():
             print("Running LOC for PID %d with parameters: " % pid, theta, flush=True)
         ### model results:
+        loc_dir = os.path.dirname(os.path.abspath(self._loc_path('LOC_aux.py')))
+        if loc_dir not in sys.path:
+            sys.path.insert(0, loc_dir)
         from LOC_aux import ReadIni
         ini_file = ReadIni(self.ini_file)
         dist = ini_file["distance"]
@@ -179,6 +182,20 @@ class elmodel:
         return env
 
     # --------------- # --------------- # ---------------
+    def _loc_path(self, filename):
+        """Return a LOC runtime script from ELMOD_LOC_DIR when configured."""
+        loc_dir = os.environ.get('ELMOD_LOC_DIR')
+        if loc_dir:
+            path = os.path.join(os.path.abspath(os.path.expanduser(loc_dir)), filename)
+        else:
+            path = filename
+        if not os.path.isfile(path):
+            raise FileNotFoundError(
+                '%s was not found; set ELMOD_LOC_DIR to the directory '
+                'containing the elmod LOC runtime' % path)
+        return path
+
+    # --------------- # --------------- # ---------------
     def _run_loc1d(self, ini_file):
         if os.environ.get('ELMOD_LOC_BACKEND', 'worker').lower() == 'subprocess':
             self._run_loc1d_subprocess(ini_file)
@@ -188,7 +205,7 @@ class elmodel:
     # --------------- # --------------- # ---------------
     def _run_loc1d_subprocess(self, ini_file):
         result = subprocess.run(
-            [sys.executable, '-X', 'faulthandler', 'LOC1D.py', '%s' % ini_file],
+            [sys.executable, '-X', 'faulthandler', self._loc_path('LOC1D.py'), '%s' % ini_file],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -207,7 +224,7 @@ class elmodel:
         if self._loc_worker is not None and self._loc_worker.poll() is None:
             return self._loc_worker
         self._loc_worker = subprocess.Popen(
-            [sys.executable, '-u', 'loc_worker.py'],
+            [sys.executable, '-u', self._loc_path('loc_worker.py')],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

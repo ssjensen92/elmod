@@ -13,12 +13,11 @@ Use `loc-upstream` for fetching upstream LOC updates. Push local elmod work to
 
 Local LOC-related changes are intentionally concentrated in:
 
-- `example/LOC1D.py`
-- `example/LOC_aux.py`
-- `example/loc_worker.py`
+- `loc/LOC1D.py`
+- `loc/LOC_aux.py`
+- `loc/loc_worker.py`
 - `module.py`
 - `misc.py`
-- example configuration in `example/oph_464_n2hp_HFS.ini`
 
 The main local changes are:
 
@@ -41,7 +40,7 @@ Check what changed upstream before applying anything:
 
 ```bash
 git diff --stat main..loc-upstream/main
-git diff main..loc-upstream/main -- example/LOC1D.py example/LOC_aux.py
+git diff main..loc-upstream/main -- loc/LOC1D.py loc/LOC_aux.py
 ```
 
 If the upstream project edits files we patch locally, expect conflicts.
@@ -63,14 +62,13 @@ Resolve conflicts by preserving both:
 After resolving conflicts:
 
 ```bash
-python3 -m py_compile example/LOC1D.py example/LOC_aux.py example/loc_worker.py module.py misc.py
+python3 -m py_compile loc/LOC1D.py loc/LOC_aux.py loc/loc_worker.py module.py misc.py
 ```
 
 Then run the example smoke test on a machine with the needed OpenCL/LOC inputs:
 
 ```bash
-cd example
-python run.py
+python examples/hcn_10.py --ini /path/to/hcn-data/HCN.ini
 ```
 
 When the sync branch is good, merge it back into `main` or open a pull request,

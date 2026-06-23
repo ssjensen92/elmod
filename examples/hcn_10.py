@@ -12,6 +12,7 @@ end of this file for the few changes needed for a joint fit.
 import argparse
 import os
 import sys
+from pathlib import Path
 
 import numpy as np
 
@@ -19,6 +20,7 @@ from elmod import elmodel
 
 
 AU = 1.495978707e13  # cm
+BUNDLED_LOC_DIR = Path(__file__).resolve().parents[1] / "loc"
 N_SHELLS = 128
 RADIUS_AU = np.linspace(10.0, 60_000.0, N_SHELLS)
 
@@ -130,22 +132,16 @@ def main():
     args = parser.parse_args()
 
     ini_file = os.path.abspath(args.ini)
-    loc_dir = os.path.dirname(ini_file)
-    required = [os.path.join(loc_dir, name) for name in ("LOC1D.py", "LOC_aux.py")]
-    missing = [path for path in required if not os.path.isfile(path)]
-    if missing:
-        parser.error(
-            "the directory containing --ini must also contain LOC1D.py and "
-            "LOC_aux.py; missing: " + ", ".join(missing)
-        )
+    data_dir = os.path.dirname(ini_file)
+    if not os.path.isfile(ini_file):
+        parser.error("LOC configuration not found: " + ini_file)
 
-    # LOC uses relative paths for molecular data and output files. Python puts
-    # the script directory on sys.path, so add the actual LOC directory here.
-    os.chdir(loc_dir)
-    sys.path.insert(0, loc_dir)
+    # LOC resolves molecular/HFS/overlap inputs relative to the configuration,
+    # while its Python and OpenCL sources come from elmod's bundled runtime.
+    os.chdir(data_dir)
+    sys.path.insert(0, str(BUNDLED_LOC_DIR))
+    os.environ["ELMOD_LOC_DIR"] = str(BUNDLED_LOC_DIR)
 
-    # A subprocess is slower to start but needs no persistent loc_worker.py.
-    os.environ.setdefault("ELMOD_LOC_BACKEND", "subprocess")
     model = make_model(ini_file)
     rng = np.random.default_rng(7)
     start = np.array([-7.25, -8.65])

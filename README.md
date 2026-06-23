@@ -13,7 +13,8 @@ transfer models to observed spectral lines.
 - Astropy
 - emcee
 - corner
-- A working LOC installation and its runtime dependencies
+- LOC runtime dependencies (including PyOpenCL) and the molecular/configuration
+  files for the transition being modelled
 
 ## Installation
 
@@ -44,12 +45,12 @@ The source name has been removed, and both the thinned HCN J=1-0 spectrum and
 the physical radial model are hardcoded; no source-specific observation or
 physical-model file is required.
 
-The default fits only HCN J=1-0 for a short, approachable run. Point `--ini`
-at an HCN configuration in a LOC directory that also contains `LOC1D.py` and
-`LOC_aux.py`:
+The default fits only HCN J=1-0 for a short, approachable run. The modified LOC
+runtime is bundled in `loc/`; point `--ini` at a directory containing the HCN
+configuration and its referenced molecular, HFS, and overlap files:
 
 ```sh
-python /path/to/elmod/examples/hcn_10.py --ini /path/to/LOC/HCN.ini
+python /path/to/elmod/examples/hcn_10.py --ini /path/to/hcn-data/HCN.ini
 ```
 
 The final section of the script shows how to add the HCN J=3-2 observations,

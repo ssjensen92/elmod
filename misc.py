@@ -42,6 +42,11 @@ def convolve_loc_sps(filename, fwhm_as, angle_as=None, samples=None):
             V  = vector of velocity values, one per channel
             T  = spectra as a cube T[NRAY, NCHN] for NRAY lines of sight and NCHN spectral channels
     '''
+    loc_dir = os.environ.get('ELMOD_LOC_DIR')
+    if loc_dir:
+        loc_dir = os.path.abspath(os.path.expanduser(loc_dir))
+        if loc_dir not in sys.path:
+            sys.path.insert(0, loc_dir)
     sys.path.append(r'')
     from LOC_aux import ConvolveSpectra1D
     fwhm_as = float(fwhm_as)
