@@ -1,19 +1,17 @@
 """Fit an anonymized starless-core HCN J=1-0 spectrum with elmod.
 
-The observed spectrum and physical core model are embedded below. The
-modified LOC runtime, HCN configuration, molecular data, and overlap data
-are bundled with the repository. Pass ``--ini`` only to use a different LOC
-configuration.
+The physical core model is embedded below, and the observed spectrum is stored
+as a two-column ASCII file beside this script. The modified LOC runtime, HCN
+configuration, molecular data, and overlap data are bundled with the
+repository. Pass ``--ini`` only to use a different LOC configuration.
 
 The default is deliberately a one-band fit.  See ``ADDING HCN J=3-2`` at the
 end of this file for the few changes needed for a joint fit.
 """
 
 import argparse
-import base64
 import os
 import sys
-import zlib
 from pathlib import Path
 
 import numpy as np
@@ -64,41 +62,10 @@ MODEL_DATA = np.column_stack((RADIUS_AU * AU, VELOCITY, DENSITY, TEMPERATURE))
 
 # Full-resolution HCN J=1-0 spectrum, shifted so the strongest component is at
 # zero velocity.
-HCN_10_CHANNELS = 1181
-HCN_10_VELOCITY_START = -12.988992691040039
-HCN_10_CHANNEL_WIDTH = 0.022015241906046867
 HCN_10_CENTRAL_VELOCITY = -4.9974598791450262
-
-# Preserve the original CB23 channel resolution without requiring a data file.
-# This is the losslessly compressed float32 central, beam-convolved spectrum.
-_T_10_COMPRESSED = (
-    "eNrt0ulTlHUAAOB1URjoWLkSwQQFlsMBQnb3fd/fuRM4rCwCq2BGRkIJKIYyrYYCKRDKyiGsEApyxDHAyCzHKqkw"
-    "qIyZylFKAbq0XJqbpAPhiDYFfepb3+vD+/wNj0Dw79okCW2KmYiAjSl+kk1DzyW3nKulIVuA7IH4nmwx+QPGwmWU"
-    "uXlUwR582MpO+9pwyX/GczqNjnuR+hen9dkIyhRqkF1dDwZuGMDvm23gMAqELq7Z0HagHabXzsNagycyGvchydom"
-    "NDU5h7QDfvh2dCbWO1/DW3aISPDZKNK1r5J0qKeIpXIN1SQraVXhIRredZJ6WWrpQmsxfSs9j9Z8kkm53L00NkNF"
-    "x+c4mrTgRh/22dCgEDM6qvqNTL/6icy695JfC3REX3OGFL/8gnxkF0I2P3Eg79wZx81NNfjY7Mf4vXXrsEH0CAkX"
-    "6pDdUBKKu+CN2BWvoN7xG1gzfQKm5yihInc19H5mAi3GNiAqywE6+2CggNbgcPsA9/7afO5UhYwzj51iYy1zWOcy"
-    "Wzblcjnj0eTACCrzZR76l9Lo9YFSWF0gea1AHyDg8Xj/Ww7xDwIS99ZKTksLpNpVwTITWMbIl1cw/Vd92Om8Tvay"
-    "SsJVdzZyEypbcMOkBnHa6yAw0QbaNETBmY4yuJAyBN0HrdFRNwVyCtWgc63daMRaiGPNJdjO9ggeiNDhvtvzOOmx"
-    "NzmefIBMiZqJcuwpiWoQ04uCBHpAWEnfKB+kWbuWyQ/PrpLPnBTLc/dvkH+X4CGXkzXybNfX5XdTntPInnv0kf9F"
-    "GqeqoEj7JU3UxNKmE5Q6Vq+nrQFW1GnbDAl9eosIFS3EsqSEHHPKJAjHEXFkMHGP8SO37zgQ4S9CUtVtwLcuXcCK"
-    "m8U47Id4XDUagAtirLCD+RDq2V6D3l2mRt+3AzTmuBL97DcBc8d18IL6BDzLhEFFhAMcjRsBoqoi8AIxoJR5wKWI"
-    "1Vyep4ATzKWxc9Em5seJYEZfVy1LGJuWlhw0k/LDeP+4PxsX4OoskSTsdJSWgjGp59l8mUntwdi2X2H6ogLZPPE1"
-    "tnHRn9t+qYLzMgrARGMIWJCcAW6PDWDF0moYfncrLCSFcE9pD9SsWIL29huQcigeFQ2fQ4u9w8job4ejRWG4CRbh"
-    "kM/68HLzlaR7JJRUdRYTld0gMTsvokKrQOr7aQbtGCqnQpc2mrW8i+bv7qIVRE+Nk/X0D+Fp2n/lGD3iv4tC+0C6"
-    "TeNFiciWHh5bJDbzY2Rm9ipp2dFI9ndoCafNJN7mCeT6V+Hk4G5AskxuJMbnTeIhe4YtrHtxaGo5LnySgrNWQ8y6"
-    "i3Dk5/dR2vF6dP7rVHRqK0L6D0VoS5sB4sxmGBSeDTX2SqiMcoIRkyZwKKgZrFxKAg26NeBtq2+5sv49XFidkAvd"
-    "qWG3KyzYIqc0piRjROaT7ivbBDKkg71aCT+Mx+PxeDzef+1vAMu0AA=="
+V_10, T_10 = np.loadtxt(
+    Path(__file__).with_name("hcn_10_spectrum.txt"), unpack=True
 )
-T_10 = np.frombuffer(
-    zlib.decompress(base64.b64decode(_T_10_COMPRESSED)), dtype="<f4"
-).astype(float)
-V_10 = (
-    HCN_10_VELOCITY_START
-    + np.arange(HCN_10_CHANNELS) * HCN_10_CHANNEL_WIDTH
-    - HCN_10_CENTRAL_VELOCITY
-)
-assert T_10.size == HCN_10_CHANNELS
 
 
 class HCNModel(elmodel):

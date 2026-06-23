@@ -42,9 +42,12 @@ MCMC run.
 [`examples/hcn_10.py`](examples/hcn_10.py) is a
 self-contained data/model example derived from a real starless-core analysis.
 The source name has been removed, and both the full-resolution HCN J=1-0
-spectrum and physical radial model are embedded; no source-specific observation
+spectrum and physical radial model are bundled; no source-specific observation
 or physical-model file is required. The strongest hyperfine component defines
 zero on the example's velocity axis.
+
+The 1,181-channel spectrum is available as the readable two-column file
+[`examples/hcn_10_spectrum.txt`](examples/hcn_10_spectrum.txt).
 
 The default fits only HCN J=1-0 for a short, approachable run. The modified LOC
 runtime is bundled in `loc/`, while the HCN configuration and its molecular and
