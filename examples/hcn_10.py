@@ -1,7 +1,7 @@
 """Fit an anonymized starless-core HCN J=1-0 spectrum with elmod.
 
-The observed spectrum and physical core model are embedded below.  Only the
-The modified LOC runtime, HCN configuration, molecular data, and overlap data
+The observed spectrum and physical core model are embedded below. The
+modified LOC runtime, HCN configuration, molecular data, and overlap data
 are bundled with the repository. Pass ``--ini`` only to use a different LOC
 configuration.
 
@@ -10,8 +10,10 @@ end of this file for the few changes needed for a joint fit.
 """
 
 import argparse
+import base64
 import os
 import sys
+import zlib
 from pathlib import Path
 
 import numpy as np
@@ -60,61 +62,43 @@ def physical_profiles(radius_au):
 VELOCITY, DENSITY, TEMPERATURE, LINEWIDTH = physical_profiles(RADIUS_AU)
 MODEL_DATA = np.column_stack((RADIUS_AU * AU, VELOCITY, DENSITY, TEMPERATURE))
 
-# An anonymized, channel-thinned HCN J=1-0 spectrum in the model velocity
-# frame.  Thinning makes the tutorial quick without changing the line shape.
-V_10 = np.array([
-    -12.98899, -12.81287, -12.63675, -12.46063, -12.28450, -12.10838,
-    -11.93226, -11.75614, -11.58002, -11.40390, -11.22777, -11.05165,
-    -10.87553, -10.69941, -10.52329, -10.34716, -10.17104, -9.99492,
-    -9.81880, -9.64268, -9.46655, -9.29043, -9.11431, -8.93819,
-    -8.76207, -8.58594, -8.40982, -8.23370, -8.05758, -7.88146,
-    -7.70533, -7.52921, -7.35309, -7.17697, -7.00085, -6.82472,
-    -6.64860, -6.47248,
-    -6.29636, -6.12024, -5.94412, -5.76799, -5.59187, -5.41575,
-    -5.23963, -5.06351, -4.88738, -4.71126, -4.53514, -4.35902,
-    -4.18290, -4.00677, -3.83065, -3.65453, -3.47841, -3.30229,
-    -3.12616, -2.95004, -2.77392, -2.59780, -2.42168, -2.24555,
-    -2.06943, -1.89331, -1.71719, -1.54107, -1.36494, -1.18882,
-    -1.01270, -0.83658, -0.66046, -0.48434, -0.30821, -0.13209,
-    0.04403, 0.22015, 0.39627, 0.57240, 0.74852, 0.92464, 1.10076,
-    1.27688, 1.45301, 1.62913, 1.80525, 1.98137, 2.15749,
-    2.33362, 2.50974, 2.68586, 2.86198, 3.03810, 3.21423,
-    3.39035, 3.56647, 3.74259, 3.91871, 4.09484, 4.27096,
-    4.44708, 4.62320, 4.79932, 4.97544, 5.15157, 5.32769,
-    5.50381, 5.67993, 5.85605, 6.03218, 6.20830, 6.38442,
-    6.56054, 6.73666, 6.91279, 7.08891, 7.26503, 7.44115,
-    7.61727, 7.79340, 7.96952, 8.14564, 8.32176, 8.49788,
-    8.67401, 8.85013, 9.02625, 9.20237, 9.37849, 9.55462,
-    9.73074, 9.90686, 10.08298, 10.25910, 10.43522, 10.61135,
-    10.78747, 10.96359, 11.13971, 11.31583, 11.49196, 11.66808,
-    11.84420, 12.02032, 12.19644, 12.37257, 12.54869, 12.72481,
-    12.90093, 12.98899,
-])
-T_10 = np.array([
-    0.0, 0.0, 0.000084, 0.001677, 0.020522, 0.442297, 1.010883,
-    0.417922, 0.078447, 0.005588, 0.000554, 0.000009, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0,
-    0.0, 0.0, 0.0, 0.000001, 0.000562, 0.012216, 0.166898,
-    2.021515, 1.646433, 0.459618, 0.149211, 0.025760, 0.003147,
-    0.000060, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.000047,
-    0.002350, 0.026216, 0.402499, 1.400348, 0.497776, 0.182028,
-    0.034948, 0.004007, 0.000223, 0.0, 0.0,
-    0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
-    0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
-    0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
-    0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
-    0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
-    0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
-    0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
-    0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
-    0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
-    0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
-    0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000,
-    0.000000, 0.000000,
-])
+# Full-resolution HCN J=1-0 spectrum, shifted so the strongest component is at
+# zero velocity.
+HCN_10_CHANNELS = 1181
+HCN_10_VELOCITY_START = -12.988992691040039
+HCN_10_CHANNEL_WIDTH = 0.022015241906046867
+HCN_10_CENTRAL_VELOCITY = -4.9974598791450262
+
+# Preserve the original CB23 channel resolution without requiring a data file.
+# This is the losslessly compressed float32 central, beam-convolved spectrum.
+_T_10_COMPRESSED = (
+    "eNrt0ulTlHUAAOB1URjoWLkSwQQFlsMBQnb3fd/fuRM4rCwCq2BGRkIJKIYyrYYCKRDKyiGsEApyxDHAyCzHKqkw"
+    "qIyZylFKAbq0XJqbpAPhiDYFfepb3+vD+/wNj0Dw79okCW2KmYiAjSl+kk1DzyW3nKulIVuA7IH4nmwx+QPGwmWU"
+    "uXlUwR582MpO+9pwyX/GczqNjnuR+hen9dkIyhRqkF1dDwZuGMDvm23gMAqELq7Z0HagHabXzsNagycyGvchydom"
+    "NDU5h7QDfvh2dCbWO1/DW3aISPDZKNK1r5J0qKeIpXIN1SQraVXhIRredZJ6WWrpQmsxfSs9j9Z8kkm53L00NkNF"
+    "x+c4mrTgRh/22dCgEDM6qvqNTL/6icy695JfC3REX3OGFL/8gnxkF0I2P3Eg79wZx81NNfjY7Mf4vXXrsEH0CAkX"
+    "6pDdUBKKu+CN2BWvoN7xG1gzfQKm5yihInc19H5mAi3GNiAqywE6+2CggNbgcPsA9/7afO5UhYwzj51iYy1zWOcy"
+    "Wzblcjnj0eTACCrzZR76l9Lo9YFSWF0gea1AHyDg8Xj/Ww7xDwIS99ZKTksLpNpVwTITWMbIl1cw/Vd92Om8Tvay"
+    "SsJVdzZyEypbcMOkBnHa6yAw0QbaNETBmY4yuJAyBN0HrdFRNwVyCtWgc63daMRaiGPNJdjO9ggeiNDhvtvzOOmx"
+    "NzmefIBMiZqJcuwpiWoQ04uCBHpAWEnfKB+kWbuWyQ/PrpLPnBTLc/dvkH+X4CGXkzXybNfX5XdTntPInnv0kf9F"
+    "GqeqoEj7JU3UxNKmE5Q6Vq+nrQFW1GnbDAl9eosIFS3EsqSEHHPKJAjHEXFkMHGP8SO37zgQ4S9CUtVtwLcuXcCK"
+    "m8U47Id4XDUagAtirLCD+RDq2V6D3l2mRt+3AzTmuBL97DcBc8d18IL6BDzLhEFFhAMcjRsBoqoi8AIxoJR5wKWI"
+    "1Vyep4ATzKWxc9Em5seJYEZfVy1LGJuWlhw0k/LDeP+4PxsX4OoskSTsdJSWgjGp59l8mUntwdi2X2H6ogLZPPE1"
+    "tnHRn9t+qYLzMgrARGMIWJCcAW6PDWDF0moYfncrLCSFcE9pD9SsWIL29huQcigeFQ2fQ4u9w8job4ejRWG4CRbh"
+    "kM/68HLzlaR7JJRUdRYTld0gMTsvokKrQOr7aQbtGCqnQpc2mrW8i+bv7qIVRE+Nk/X0D+Fp2n/lGD3iv4tC+0C6"
+    "TeNFiciWHh5bJDbzY2Rm9ipp2dFI9ndoCafNJN7mCeT6V+Hk4G5AskxuJMbnTeIhe4YtrHtxaGo5LnySgrNWQ8y6"
+    "i3Dk5/dR2vF6dP7rVHRqK0L6D0VoS5sB4sxmGBSeDTX2SqiMcoIRkyZwKKgZrFxKAg26NeBtq2+5sv49XFidkAvd"
+    "qWG3KyzYIqc0piRjROaT7ivbBDKkg71aCT+Mx+PxeDzef+1vAMu0AA=="
+)
+T_10 = np.frombuffer(
+    zlib.decompress(base64.b64decode(_T_10_COMPRESSED)), dtype="<f4"
+).astype(float)
+V_10 = (
+    HCN_10_VELOCITY_START
+    + np.arange(HCN_10_CHANNELS) * HCN_10_CHANNEL_WIDTH
+    - HCN_10_CENTRAL_VELOCITY
+)
+assert T_10.size == HCN_10_CHANNELS
 
 
 class HCNModel(elmodel):
@@ -154,7 +138,7 @@ def make_model(ini_file):
     model.yerr = np.full_like(T_10, 0.05)
     model.targ_beams = [27.8]  # arcsec
     model.band_fnames = ["HCN.band0.spe"]
-    model.V_lsr = 0.0  # velocities above are already in the model frame
+    model.V_lsr = -HCN_10_CENTRAL_VELOCITY
     model.pass_priorfunc(log_prior)
     return model
 

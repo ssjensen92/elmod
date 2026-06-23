@@ -58,7 +58,13 @@ def plot_spectra(model, median, output):
         offset += size
 
         label = BAND_LABELS[band] if band < len(BAND_LABELS) else f"Band {band}"
-        axis.step(velocity, observed, where="mid", color="black", label="Observed")
+        axis.plot(
+            velocity,
+            observed,
+            color="black",
+            drawstyle="steps-mid",
+            label="Observed",
+        )
         axis.plot(velocity, predicted, color="tab:red", linewidth=2, label="Median model")
         axis.plot(
             velocity,
