@@ -1,9 +1,9 @@
 """Fit an anonymized starless-core HCN J=1-0 spectrum with elmod.
 
 The observed spectrum and physical core model are embedded below.  Only the
-LOC installation and its HCN configuration/molecular data are external.  Run
-this script from the LOC working directory so that ``LOC1D.py`` and
-``LOC_aux.py`` are importable.
+LOC installation and its HCN configuration/molecular data are external. Pass
+the configuration path with ``--ini``; the script uses its directory as the
+LOC working directory.
 
 The default is deliberately a one-band fit.  See ``ADDING HCN J=3-2`` at the
 end of this file for the few changes needed for a joint fit.
@@ -11,6 +11,7 @@ end of this file for the few changes needed for a joint fit.
 
 import argparse
 import os
+import sys
 
 import numpy as np
 
@@ -128,9 +129,24 @@ def main():
     parser.add_argument("--output", default="hcn_10.h5")
     args = parser.parse_args()
 
+    ini_file = os.path.abspath(args.ini)
+    loc_dir = os.path.dirname(ini_file)
+    required = [os.path.join(loc_dir, name) for name in ("LOC1D.py", "LOC_aux.py")]
+    missing = [path for path in required if not os.path.isfile(path)]
+    if missing:
+        parser.error(
+            "the directory containing --ini must also contain LOC1D.py and "
+            "LOC_aux.py; missing: " + ", ".join(missing)
+        )
+
+    # LOC uses relative paths for molecular data and output files. Python puts
+    # the script directory on sys.path, so add the actual LOC directory here.
+    os.chdir(loc_dir)
+    sys.path.insert(0, loc_dir)
+
     # A subprocess is slower to start but needs no persistent loc_worker.py.
     os.environ.setdefault("ELMOD_LOC_BACKEND", "subprocess")
-    model = make_model(args.ini)
+    model = make_model(ini_file)
     rng = np.random.default_rng(7)
     start = np.array([-7.25, -8.65])
     walkers = start + rng.normal(0.0, 0.03, size=(8, start.size))

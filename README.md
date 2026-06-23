@@ -44,11 +44,12 @@ The source name has been removed, and both the thinned HCN J=1-0 spectrum and
 the physical radial model are hardcoded; no source-specific observation or
 physical-model file is required.
 
-The default fits only HCN J=1-0 for a short, approachable run. From a LOC
-working directory containing `LOC1D.py`, `LOC_aux.py`, and an HCN setup, run:
+The default fits only HCN J=1-0 for a short, approachable run. Point `--ini`
+at an HCN configuration in a LOC directory that also contains `LOC1D.py` and
+`LOC_aux.py`:
 
 ```sh
-python /path/to/elmod/examples/hcn_10.py --ini HCN.ini
+python /path/to/elmod/examples/hcn_10.py --ini /path/to/LOC/HCN.ini
 ```
 
 The final section of the script shows how to add the HCN J=3-2 observations,
