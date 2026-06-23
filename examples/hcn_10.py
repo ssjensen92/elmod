@@ -60,9 +60,11 @@ def physical_profiles(radius_au):
 VELOCITY, DENSITY, TEMPERATURE, LINEWIDTH = physical_profiles(RADIUS_AU)
 MODEL_DATA = np.column_stack((RADIUS_AU * AU, VELOCITY, DENSITY, TEMPERATURE))
 
-# Full-resolution HCN J=1-0 spectrum, shifted so the strongest component is at
-# zero velocity.
-HCN_10_CENTRAL_VELOCITY = -4.9974598791450262
+# Native-resolution HCN J=1-0 observation. The ASCII velocity axis has the
+# original 6.05 km/s systemic velocity removed, matching the source analysis.
+HCN_10_SOURCE_VELOCITY = 6.05
+HCN_10_MODEL_VELOCITY_OFFSET = 4.843549499074382
+HCN_10_RMS = 0.017968176238194116
 V_10, T_10 = np.loadtxt(
     Path(__file__).with_name("hcn_10_spectrum.txt"), unpack=True
 )
@@ -102,10 +104,12 @@ def make_model(ini_file):
     model.T_obs[0] = T_10
     model.x = V_10.copy()
     model.y = T_10.copy()
-    model.yerr = np.full_like(T_10, 0.05)
+    model.yerr = np.full_like(T_10, 2.0 * HCN_10_RMS)
     model.targ_beams = [27.8]  # arcsec
     model.band_fnames = ["HCN.band0.spe"]
-    model.V_lsr = -HCN_10_CENTRAL_VELOCITY
+    # Convert LOC's band-0 reference velocity to the same systemic frame as
+    # the observation. This offset reproduces the original frequency mapping.
+    model.V_lsr = HCN_10_MODEL_VELOCITY_OFFSET
     model.pass_priorfunc(log_prior)
     return model
 

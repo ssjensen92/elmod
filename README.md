@@ -43,10 +43,10 @@ MCMC run.
 self-contained data/model example derived from a real starless-core analysis.
 The source name has been removed, and both the full-resolution HCN J=1-0
 spectrum and physical radial model are bundled; no source-specific observation
-or physical-model file is required. The strongest hyperfine component defines
-zero on the example's velocity axis.
+or physical-model file is required. The velocity axis is relative to the
+original 6.05 km/s systemic velocity.
 
-The 1,181-channel spectrum is available as the readable two-column file
+The native 171-channel observation is available as the readable two-column file
 [`examples/hcn_10_spectrum.txt`](examples/hcn_10_spectrum.txt).
 
 The default fits only HCN J=1-0 for a short, approachable run. The modified LOC
