@@ -36,6 +36,23 @@ The model must also be configured with the target beam sizes, LOC output band
 names, source velocity, observational errors, and a prior function before an
 MCMC run.
 
+## LOC license and citation
+
+LOC is developed by Mika Juvela and is distributed under the GNU General
+Public License v3.0. Any use, modification, or redistribution of LOC source
+code must comply with the LOC license and preserve its copyright and license
+notices. The `elmod` license does not replace or override the license that
+applies to LOC.
+
+If you use LOC in scientific work, please cite:
+
+> Juvela, M. (2020), "LOC program for line radiative transfer,"
+> *Astronomy & Astrophysics*, **644**, A151.
+> https://doi.org/10.1051/0004-6361/202039456
+
+See the [LOC repository](https://github.com/mjuvela/LOC) for its source code,
+license, and current documentation.
+
 ## License
 
 This project is distributed under the GNU General Public License v3.0. See
