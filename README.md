@@ -36,6 +36,25 @@ The model must also be configured with the target beam sizes, LOC output band
 names, source velocity, observational errors, and a prior function before an
 MCMC run.
 
+## Example: anonymized HCN fit
+
+[`examples/hcn_10.py`](examples/hcn_10.py) is a
+self-contained data/model example derived from a real starless-core analysis.
+The source name has been removed, and both the thinned HCN J=1-0 spectrum and
+the physical radial model are hardcoded; no source-specific observation or
+physical-model file is required.
+
+The default fits only HCN J=1-0 for a short, approachable run. From a LOC
+working directory containing `LOC1D.py`, `LOC_aux.py`, and an HCN setup, run:
+
+```sh
+python /path/to/elmod/examples/hcn_10.py --ini HCN.ini
+```
+
+The final section of the script shows how to add the HCN J=3-2 observations,
+its 9.3-arcsec beam and LOC `band2`, set `nbands=2`, and constrain both bands
+with a single joint likelihood.
+
 ## LOC license and citation
 
 LOC is developed by Mika Juvela and is distributed under the GNU General
