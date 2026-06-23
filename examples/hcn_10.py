@@ -144,8 +144,8 @@ def main():
         default=str(Path(__file__).with_name("HCN.ini")),
         help="LOC configuration (default: examples/HCN.ini)",
     )
-    parser.add_argument("--steps", type=int, default=30)
-    parser.add_argument("--burnin", type=int, default=5)
+    parser.add_argument("--steps", type=int, default=40)
+    parser.add_argument("--burnin", type=int, default=6)
     parser.add_argument("--output", default="hcn_10.h5")
     args = parser.parse_args()
 
