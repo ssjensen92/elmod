@@ -63,18 +63,19 @@ def plot_spectra(model, median, output):
             observed,
             color="black",
             drawstyle="steps-mid",
-            label="Observed",
+            label="Observed", linewidth=2.0
         )
-        axis.plot(velocity, predicted, color="tab:red", linewidth=2, label="Median model")
+        axis.plot(velocity, predicted, color="tab:red", linewidth=1.5, label="Median model")
         axis.plot(
             velocity,
             observed - predicted,
             color="tab:blue",
-            linewidth=1,
-            label="Residual",
+            linewidth=2.0,
+            label="Residual", drawstyle="steps-mid",
         )
         axis.axhline(0.0, color="0.6", linewidth=0.8)
         axis.set_title(label)
+
         axis.set_xlabel(r"Velocity (km s$^{-1}$)")
         axis.set_ylabel(r"$T_{\rm mb}$ (K)")
         axis.legend()
