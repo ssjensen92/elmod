@@ -158,6 +158,7 @@ CB23/
 # Runtime products created by the bundled example.
 examples/*.cloud
 examples/*.h5
+examples/*.png
 examples/*.spe
 examples/loc_ini_*.ini
 

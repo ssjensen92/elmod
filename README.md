@@ -56,6 +56,17 @@ python /path/to/elmod/examples/hcn_10.py
 Pass `--ini /path/to/custom.ini` to use another LOC configuration. Relative
 paths inside that file are resolved from the directory containing it.
 
+After the fit, plot the median spectrum, residual, and posterior corner plot:
+
+```sh
+python /path/to/elmod/examples/plot_hcn.py
+```
+
+This writes `hcn_median.png` and `hcn_corner.png` in `examples/`. The spectrum
+plotter iterates over all configured bands, so it will add an HCN J=3-2 panel
+automatically when `make_model` is extended to the two-band setup documented
+at the end of `hcn_10.py`.
+
 The final section of the script shows how to add the HCN J=3-2 observations,
 its 9.3-arcsec beam and LOC `band2`, set `nbands=2`, and constrain both bands
 with a single joint likelihood.

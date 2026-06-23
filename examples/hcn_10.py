@@ -123,6 +123,20 @@ def make_model(ini_file):
     return model
 
 
+def configure_runtime(ini_file):
+    """Configure the bundled LOC runtime and return an absolute ini path."""
+    ini_file = os.path.abspath(ini_file)
+    if not os.path.isfile(ini_file):
+        raise FileNotFoundError("LOC configuration not found: " + ini_file)
+
+    # LOC resolves molecular/HFS/overlap inputs relative to the configuration,
+    # while its Python and OpenCL sources come from elmod's bundled runtime.
+    os.chdir(os.path.dirname(ini_file))
+    sys.path.insert(0, str(BUNDLED_LOC_DIR))
+    os.environ["ELMOD_LOC_DIR"] = str(BUNDLED_LOC_DIR)
+    return ini_file
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -135,16 +149,10 @@ def main():
     parser.add_argument("--output", default="hcn_10.h5")
     args = parser.parse_args()
 
-    ini_file = os.path.abspath(args.ini)
-    data_dir = os.path.dirname(ini_file)
-    if not os.path.isfile(ini_file):
-        parser.error("LOC configuration not found: " + ini_file)
-
-    # LOC resolves molecular/HFS/overlap inputs relative to the configuration,
-    # while its Python and OpenCL sources come from elmod's bundled runtime.
-    os.chdir(data_dir)
-    sys.path.insert(0, str(BUNDLED_LOC_DIR))
-    os.environ["ELMOD_LOC_DIR"] = str(BUNDLED_LOC_DIR)
+    try:
+        ini_file = configure_runtime(args.ini)
+    except FileNotFoundError as exc:
+        parser.error(str(exc))
 
     model = make_model(ini_file)
     rng = np.random.default_rng(7)
