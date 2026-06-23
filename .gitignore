@@ -155,6 +155,12 @@ cython_debug/
 # Private source data and LOC run products used to derive the public example.
 CB23/
 
+# Runtime products created by the bundled example.
+examples/*.cloud
+examples/*.h5
+examples/*.spe
+examples/loc_ini_*.ini
+
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore

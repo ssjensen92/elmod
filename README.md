@@ -46,12 +46,15 @@ the physical radial model are hardcoded; no source-specific observation or
 physical-model file is required.
 
 The default fits only HCN J=1-0 for a short, approachable run. The modified LOC
-runtime is bundled in `loc/`; point `--ini` at a directory containing the HCN
-configuration and its referenced molecular, HFS, and overlap files:
+runtime is bundled in `loc/`, while the HCN configuration and its molecular and
+overlap inputs are bundled with the example. Run it without additional paths:
 
 ```sh
-python /path/to/elmod/examples/hcn_10.py --ini /path/to/hcn-data/HCN.ini
+python /path/to/elmod/examples/hcn_10.py
 ```
+
+Pass `--ini /path/to/custom.ini` to use another LOC configuration. Relative
+paths inside that file are resolved from the directory containing it.
 
 The final section of the script shows how to add the HCN J=3-2 observations,
 its 9.3-arcsec beam and LOC `band2`, set `nbands=2`, and constrain both bands

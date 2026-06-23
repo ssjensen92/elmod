@@ -1,9 +1,9 @@
 """Fit an anonymized starless-core HCN J=1-0 spectrum with elmod.
 
 The observed spectrum and physical core model are embedded below.  Only the
-LOC installation and its HCN configuration/molecular data are external. Pass
-the configuration path with ``--ini``; the script uses its directory as the
-LOC working directory.
+The modified LOC runtime, HCN configuration, molecular data, and overlap data
+are bundled with the repository. Pass ``--ini`` only to use a different LOC
+configuration.
 
 The default is deliberately a one-band fit.  See ``ADDING HCN J=3-2`` at the
 end of this file for the few changes needed for a joint fit.
@@ -125,7 +125,11 @@ def make_model(ini_file):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ini", default="HCN.ini", help="LOC configuration")
+    parser.add_argument(
+        "--ini",
+        default=str(Path(__file__).with_name("HCN.ini")),
+        help="LOC configuration (default: examples/HCN.ini)",
+    )
     parser.add_argument("--steps", type=int, default=30)
     parser.add_argument("--burnin", type=int, default=5)
     parser.add_argument("--output", default="hcn_10.h5")

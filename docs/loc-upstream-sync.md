@@ -68,7 +68,7 @@ python3 -m py_compile loc/LOC1D.py loc/LOC_aux.py loc/loc_worker.py module.py mi
 Then run the example smoke test on a machine with the needed OpenCL/LOC inputs:
 
 ```bash
-python examples/hcn_10.py --ini /path/to/hcn-data/HCN.ini
+python examples/hcn_10.py
 ```
 
 When the sync branch is good, merge it back into `main` or open a pull request,
