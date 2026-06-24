@@ -82,3 +82,58 @@ def LOC_read_spectra_1D(filename):
     SPE = np.fromfile(fp, np.float32, NRAY*NCHN).reshape(NRAY, NCHN)
     fp.close()
     return V0+np.arange(NCHN)*DV, SPE
+
+
+def channel_average_spectrum(velocity, spectrum, centers, channel_width):
+    """Average a model spectrum over finite-width observational channels.
+
+    The model is treated as piecewise linear between its native velocity
+    samples and integrated exactly over a top-hat channel response. Values
+    beyond the model grid use the nearest edge value, matching elmod's former
+    interpolation behaviour.
+    """
+    velocity = np.asarray(velocity, dtype=float)
+    spectrum = np.asarray(spectrum, dtype=float)
+    centers = np.asarray(centers, dtype=float)
+    widths = np.broadcast_to(np.asarray(channel_width, dtype=float), centers.shape)
+
+    if velocity.ndim != 1 or spectrum.shape != velocity.shape:
+        raise ValueError('velocity and spectrum must be one-dimensional arrays of equal length')
+    if velocity.size < 2:
+        raise ValueError('at least two model velocity samples are required')
+    if np.any(~np.isfinite(widths)) or np.any(widths <= 0.0):
+        raise ValueError('channel widths must be finite and positive')
+
+    order = np.argsort(velocity)
+    x = velocity[order]
+    y = spectrum[order]
+    if np.any(np.diff(x) <= 0.0):
+        raise ValueError('model velocities must be unique')
+
+    dx = np.diff(x)
+    slope = np.diff(y) / dx
+    cumulative = np.concatenate((
+        [0.0],
+        np.cumsum(0.5 * (y[:-1] + y[1:]) * dx),
+    ))
+
+    def antiderivative(points):
+        points = np.asarray(points, dtype=float)
+        result = np.empty_like(points)
+        left = points <= x[0]
+        right = points >= x[-1]
+        middle = ~(left | right)
+        result[left] = (points[left] - x[0]) * y[0]
+        result[right] = cumulative[-1] + (points[right] - x[-1]) * y[-1]
+        indices = np.searchsorted(x, points[middle], side='right') - 1
+        local_dx = points[middle] - x[indices]
+        result[middle] = (
+            cumulative[indices]
+            + y[indices] * local_dx
+            + 0.5 * slope[indices] * local_dx**2
+        )
+        return result
+
+    lower = centers - 0.5 * widths
+    upper = centers + 0.5 * widths
+    return (antiderivative(upper) - antiderivative(lower)) / widths

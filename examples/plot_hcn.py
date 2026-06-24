@@ -72,6 +72,7 @@ def plot_spectra(model, median, output):
             color="tab:red",
             linewidth=1.5,
             label="Median model",
+            drawstyle="steps-mid",
         )
         axis.plot(
             velocity,

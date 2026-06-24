@@ -68,6 +68,7 @@ HCN_10_RMS = 0.017968176238194116
 V_10, T_10 = np.loadtxt(
     Path(__file__).with_name("hcn_10_spectrum.txt"), unpack=True
 )
+HCN_10_CHANNEL_WIDTH = float(np.median(np.diff(V_10)))
 
 
 class HCNModel(elmodel):
@@ -107,6 +108,7 @@ def make_model(ini_file):
     model.yerr = np.full_like(T_10, 2.0 * HCN_10_RMS)
     model.targ_beams = [27.8]  # arcsec
     model.band_fnames = ["HCN.band0.spe"]
+    model.channel_widths = [HCN_10_CHANNEL_WIDTH]
     # Convert LOC's band-0 reference velocity to the same systemic frame as
     # the observation. This offset reproduces the original frequency mapping.
     model.V_lsr = HCN_10_MODEL_VELOCITY_OFFSET
@@ -173,6 +175,7 @@ if __name__ == "__main__":
 #   model.yerr = np.concatenate((np.full_like(T_10, 0.05), sigma_32))
 #   model.targ_beams = [27.8, 9.3]
 #   model.band_fnames = ["HCN.band0.spe", "HCN.band2.spe"]
+#   model.channel_widths = [HCN_10_CHANNEL_WIDTH, HCN_32_CHANNEL_WIDTH]
 #
 # The LOC ini file must write both bands; in the configuration from which this
 # example was derived, band0 is HCN J=1-0 and band2 is HCN J=3-2.  elmod then

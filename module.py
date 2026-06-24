@@ -36,6 +36,7 @@ class elmodel:
         self.nbands = nbands
         self.V_obs = [[]]*nbands
         self.T_obs = [[]]*nbands
+        self.channel_widths = [None]*nbands
         self.ini_file = ini_file
         self.x = x
         self.y = y
@@ -46,6 +47,7 @@ class elmodel:
         print("Model expected to have %d bands" % self.nbands)
         print("-- ** !! ** --")
         print("Remember to set the target beam sizes, band_fnames, V_lsr, and load the observations")
+        print("Set channel_widths to average LOC spectra to the observational resolution.")
         print("and remember to set the yerr (errors in the observed spectra).")
         print("Also, remember to set the prior function.")
         print("-- ** !! ** --")
@@ -161,13 +163,21 @@ class elmodel:
             # index for the spectra. This is always toward the core center in my case (single pointing)
             ind = np.int32(rad_off/dist/(angle/nray-1))
     
-            # create interpolation functions.
-            fint = interpolate.interp1d(V, T[ind, :], bounds_error=False, fill_value=(T[ind, np.argmin(V)], T[ind, np.argmax(V)]))
-        
             # split observed x-arrays (if multiple bands)
-            x_band = self.V_obs[i]
-            # interp model onto observed x-arrays
-            interp_y = fint(x_band)
+            x_band = np.asarray(self.V_obs[i])
+            channel_width = self.channel_widths[i]
+            if channel_width is None:
+                # Point-sample the model when no instrumental resolution is set.
+                fint = interpolate.interp1d(
+                    V,
+                    T[ind, :],
+                    bounds_error=False,
+                    fill_value=(T[ind, np.argmin(V)], T[ind, np.argmax(V)]))
+                interp_y = fint(x_band)
+            else:
+                # Match the observed top-hat channel response before comparing.
+                interp_y = channel_average_spectrum(
+                    V, T[ind, :], x_band, channel_width)
             y_bands.append(interp_y)
 
 
@@ -406,6 +416,8 @@ class elmodel:
         # Check if the length of T_obs is the same as the number of bands
         if len(self.T_obs) != self.nbands:
             raise ValueError('The number of T_obs should be the same as the number of bands')
+        if len(self.channel_widths) != self.nbands:
+            raise ValueError('The number of channel widths should be the same as the number of bands')
 
     # --------------- # --------------- # ---------------
     def _validate_initial_walkers(self, pos):

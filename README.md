@@ -48,6 +48,9 @@ original 6.05 km/s systemic velocity.
 
 The native 171-channel observation is available as the readable two-column file
 [`examples/hcn_10_spectrum.txt`](examples/hcn_10_spectrum.txt).
+Before likelihood evaluation and plotting, elmod integrates the high-resolution
+LOC model across each 0.16516 km/s observational channel using a top-hat channel
+response.
 
 The default fits only HCN J=1-0 for a short, approachable run. The modified LOC
 runtime is bundled in `loc/`, while the HCN configuration and its molecular and
